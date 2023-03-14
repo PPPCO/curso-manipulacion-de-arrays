@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+        const products = [
+            {title: 'Burger', price: 121},
+            {title: 'Pizza', price: 20}
+        ];
+        const app = document.getElementById('app');
+        products.forEach(product => {
+            app.innerHTML += `<li>${product.title} - ${product.price}</li>`
+        } )
+        // titulo de la tarea, el estado y renderizarlo en html
+
+        const tareas = [
+            {tarea: "Lavar", estado: 'Hecho'},
+            {tarea: 'Tender la cama', estado: 'Hecho'},
+            {tarea: 'Hacer el desayuno', estado: 'Pendiente'},
+            {tarea: 'Lavar los trastes', estado: 'Hecho'}
+        ];
+        tareas.forEach(elemento =>{
+            const ul = document.createElement("ul");
+            const li = document.createElement("li");
+            li.innerText = `${elemento.tarea} - ${elemento.estado}`;
+            ul.append(li);
+            app.appendChild(ul);
+            
+            const inputChec = document.createElement('input')
+            inputChec.setAttribute('type','checkbox');
+            if(elemento.estado == 'Hecho'){
+                inputChec.setAttribute('checked', true)
+            }
+            app.appendChild(inputChec);
+        });
+
+    </script>
+</body>
+</html>
