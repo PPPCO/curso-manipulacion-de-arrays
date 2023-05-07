@@ -131,3 +131,155 @@ const input = [
 console.log("arreglo original: ");
 console.log(input);
 console.log(addNewArt(input));
+
+
+const data = [
+  {
+      "ID": "22268",
+      "ACTIVIDAD": "Llegada a parque y traslado a subestación",
+      "HORA_INICIO": "05:59:00",
+      "HORA_FIN": "07:59:00",
+      "COMENTARIOS": "LLegada al parque en Oax",
+      "NOMBRE": ""
+  },
+  {
+      "ID": "61450",
+      "ACTIVIDAD": "Traslado a WTG",
+      "FECHA": "2023-05-06",
+      "ID_PROYECTO": "270",
+      "ID_AEROGENERADOR": "16189",
+      "HORA_INICIO": "07:59:00",
+      "HORA_FIN": "08:59:00",
+      "NOMBRE": "1",
+      "COMENTARIOS": "Traslado desde subestacion hacia el WTG01 "
+  },
+  {
+      "ID": "61451",
+      "ACTIVIDAD": "Inicio y termino de trabajo",
+      "FECHA": "2023-05-06",
+      "ID_PROYECTO": "270",
+      "ID_AEROGENERADOR": "16189",
+      "HORA_INICIO": "09:00:00",
+      "HORA_FIN": "13:00:00",
+      "NOMBRE": "1",
+      "COMENTARIOS": "Mantenimiento general realizado con extio"
+  },
+  {
+      "ID": "22269",
+      "ACTIVIDAD": "Hora de comida ",
+      "HORA_INICIO": "13:00:00",
+      "HORA_FIN": "13:30:00",
+      "COMENTARIOS": "Toma de la hora de comida",
+      "NOMBRE": ""
+  },
+  {
+      "ID": "1305",
+      "ACTIVIDAD": "StandBy por Material",
+      "HORA_INICIO": "13:30:00",
+      "HORA_FIN": "14:00:00",
+      "MOTIVO": "2",
+      "ACTIVO": "1",
+      "NOMBRE": "Stand By",
+      "HORA_STAND": true
+  },
+  {
+      "ID": "61452",
+      "ACTIVIDAD": "Traslado a WTG",
+      "FECHA": "2023-05-06",
+      "ID_PROYECTO": "270",
+      "ID_AEROGENERADOR": "16190",
+      "HORA_INICIO": "14:01:00",
+      "HORA_FIN": "15:01:00",
+      "NOMBRE": "2",
+      "COMENTARIOS": "Traslado desde WTG01 al WTG02\n"
+  },
+  {
+      "ID": "1302",
+      "ACTIVIDAD": "Stand by",
+      "HORA_INICIO": "15:01:00",
+      "HORA_FIN": "16:01:00",
+      "MOTIVO": "1",
+      "ACTIVO": "1",
+      "NOMBRE": "Stand By",
+      "HORA_STAND": true
+  },
+  {
+      "ID": "61453",
+      "ACTIVIDAD": "Inicio y termino de trabajo",
+      "FECHA": "2023-05-06",
+      "ID_PROYECTO": "270",
+      "ID_AEROGENERADOR": "16190",
+      "HORA_INICIO": "16:02:00",
+      "HORA_FIN": "17:02:00",
+      "NOMBRE": "2",
+      "COMENTARIOS": "Mantenimiento exitoso al ascensor de emergencia"
+  },
+  {
+      "ID": "22270",
+      "ACTIVIDAD": "Salida de parque",
+      "HORA_INICIO": "17:08:00",
+      "HORA_FIN": "18:08:00",
+      "COMENTARIOS": "Salida del parque desde WTG02",
+      "NOMBRE": ""
+  }
+];
+
+function TimeForm( time ){
+  if( time > 0 && time < 10 ) return `0${time}`;
+  if( time <= 0 ) return `00`;
+  return time.toString()
+}
+
+function RestaDeHoras( hora1 , hora2 ){
+  const [ horaExtra , minutoExtra ] = hora1.split( ":" ).map( element => parseInt( element ) );
+  const [ horaStandby, minutoStandby ] = hora2.split( ":" ).map( element => parseInt( element ) );
+  if( horaExtra < horaStandby ) return;
+  const horasTotales = horaExtra - horaStandby ;
+  if ( minutoExtra < minutoStandby && horaExtra === horaStandby ) {
+      return;
+  } else if ( minutoExtra < minutoStandby ){
+      const minutosAcumulados = ( horasTotales * 60 ) + minutoExtra ;
+      const  minutosTotales = minutosAcumulados - minutoStandby ;
+      return `${ TimeForm( Math.trunc( minutosTotales / 60) ) }:${ TimeForm( minutosTotales % 60 ) }`;
+  } else {
+      return `${ TimeForm( horaExtra - horaStandby ) }:${ TimeForm( minutoExtra - minutoStandby ) }`;
+  }
+}
+
+function SumatoriaHorasTrabajadas( array ){
+  const horas_minutos = array.map( element => element.split( ":" ).map( item => parseInt( item ) ) );
+  const horas_acumuladas = horas_minutos.reduce( (Acumulador, element) => Acumulador + element[0], 0 );
+  const minutos_acumulados = horas_minutos.reduce( (Acumulador, element) => Acumulador + element[1], 0 );
+  if( minutos_acumulados >= 60 ){
+      return `${ TimeForm( horas_acumuladas + Math.trunc( minutos_acumulados / 60) ) }:${ TimeForm( minutos_acumulados % 60 ) }`;
+  } else {
+      return `${ TimeForm( horas_acumuladas ) }:${ TimeForm( minutos_acumulados ) }`;
+  }
+}
+// DATA PERO CON LA DURACION DE LA ACTIVIDAD
+const usableData = data.map( ( actividad ) => ( { 
+  ...actividad, 
+  "TIEMPO_DE_ACTIVIDAD" : RestaDeHoras( actividad.HORA_FIN , actividad.HORA_INICIO  ) 
+} ) );
+console.log( usableData );
+
+let horasEfectivasAcumuladas = "00:00";
+let flag = 0;
+usableData.forEach( ( actividad ) => {
+  horasEfectivasAcumuladas = SumatoriaHorasTrabajadas( [ horasEfectivasAcumuladas , actividad.TIEMPO_DE_ACTIVIDAD ] );
+  if ( flag === 0 ) {
+    
+  } else {
+    if( horasEfectivasAcumuladas >= "09:30") {
+      actividad.HORA_EXTRA = "00:00"
+    }
+  }
+});
+console.log( horasEfectivasAcumuladas );
+console.log( horasEfectivasAcumuladas > "12:00" );
+console.log( horasEfectivasAcumuladas > "11:30" );
+console.log(usableData);
+
+
+const horasTotales = usableData.reduce( ( acumulador , actividad ) =>  SumatoriaHorasTrabajadas([acumulador, actividad.TIEMPO_DE_ACTIVIDAD])  , "00:00");
+console.log( horasTotales );
